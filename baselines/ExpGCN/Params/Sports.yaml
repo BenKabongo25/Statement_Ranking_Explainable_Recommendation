@@ -1,0 +1,9 @@
+dataset: Sports
+
+neg_sampling:
+  uniform: 20
+
+n_layers: 4
+m_layers: 2
+weight_decay: 1e-6
+tag_weight: 1

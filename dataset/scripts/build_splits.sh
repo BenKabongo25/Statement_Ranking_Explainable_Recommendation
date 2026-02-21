@@ -6,7 +6,7 @@ VERSION=14
 ROOT=/data/common
 DATASET_DIR=${ROOT}/RecommendationDatasets/StatementDatasets/${DATASET_NAME}${VERSION}
 
-PYTHONPATH=. python3 statement_benchmark/dataset/build_splits.py \
+PYTHONPATH=. python3 dataset/build_splits.py \
   --dataset_dir ${DATASET_DIR} \
   --user_col user_id \
   --item_col item_id \

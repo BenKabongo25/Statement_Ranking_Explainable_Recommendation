@@ -9,7 +9,7 @@ CLUSTER_DIR=${DATASET_DIR}/clusters
 
 mkdir -p ${CLUSTER_DIR}
 
-PYTHONPATH=. python clustering/graph_clustering.py \
+PYTHONPATH=. python clustering/graph_refinement.py \
     --statement_path ${DATASET_DIR}/statements_vS.csv \
     --rerank_path ${DATASET_DIR}/tmp/rerank_pairs.csv \
     --embedding_path ${DATASET_DIR}/embeddings_vS.pt \

@@ -8,7 +8,7 @@ DATASET_DIR=${ROOT}/RecommendationDatasets/StatementDatasets/${DATASET_NAME}${VE
 OUTPUT_DIR=${DATASET_DIR}/tmp
 CROSS_ENCODER=Qwen/Qwen3-Reranker-0.6B
 
-PYTHONPATH=. accelerate launch clustering/rerank_pairs.py \
+PYTHONPATH=. accelerate launch clustering/pairwise_filtering.py \
     --model_name ${CROSS_ENCODER} \
     --statement_path ${DATASET_DIR}/statements_vS.csv \
     --neighbours_path ${OUTPUT_DIR}/ann_results.npz \

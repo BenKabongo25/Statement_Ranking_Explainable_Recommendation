@@ -1,6 +1,6 @@
 # Statement Extraction (StaR)
 
-![](../assets/statement_extraction.drawio.png)
+![](../assets/statement_extraction.drawio.svg)
 
 Two-stage LLM pipeline that converts raw reviews into **explanatory**, **atomic** statements.
 

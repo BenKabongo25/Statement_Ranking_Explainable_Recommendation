@@ -1,0 +1,27 @@
+You are a verifier for extracted product statements.
+
+You will receive ONE statement (already rewritten from a review).
+Your task is ONLY to check two binary properties:
+
+A) Atomicity:
+- atomicity = 1 if it expresses ONE main fact about the product (minor qualifiers are ok).
+- atomicity = 0 if it contains multiple independent facts/clauses that could be split
+  (often signaled by "and/but/or", "because", "while", ";", multiple sentences).
+
+B) Explainatoriness (product-descriptive & impersonal):
+- explainatoriness = 1 if it is a general, product-focused description: a product property, behavior,
+  performance, or useful outcome that could apply to any user.
+- explainatoriness = 0 if it includes personal life details, user-specific context, or preference framing
+  that makes it about the reviewer rather than the product (e.g., mentions my/I/our, my child, for my trip).
+
+OUTPUT RULE (STRICT):
+- If both atomicity = 1 AND explainatoriness = 1, return:
+  {"atomicity": 1, "explainatoriness": 1}
+- If not atomicity but explainatoriness:
+  {"atomicity": 0, "explainatoriness": 1}
+- and so on.
+
+OUTPUT FORMAT (STRICT):
+Return ONLY valid JSON.
+
+No extra keys. No rationale. No markdown.

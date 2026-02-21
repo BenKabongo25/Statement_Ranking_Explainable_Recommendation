@@ -80,10 +80,8 @@ def main(config):
 
     os.makedirs(config.output_dir, exist_ok=True)
 
-    # IMPORTANT: separate outputs per GPU/process to avoid corrupting one CSV
-    path = os.path.join(config.output_dir, f"statement_rank{rank}.csv")
+    path = os.path.join(config.output_dir, f"statements_{rank}.csv")
 
-    # Separate streaming resume state per process too
     state_dict_dir = os.path.join(config.output_dir, "state_dicts")
     os.makedirs(state_dict_dir, exist_ok=True)
     state_dict_path = os.path.join(state_dict_dir, f"state_dict.rank{rank}.json")
@@ -114,11 +112,8 @@ def main(config):
         for key, value in AMAZON_2014_ENTRIES.items():
             dataset = dataset.rename_column(key, value)
 
-    # Split dataset across GPUs/processes (rank0 gets 0,2,4... rank1 gets 1,3,5...)
     dataset = dataset.filter(lambda ex, idx: (idx % world) == rank, with_indices=True)
 
-
-    # If resuming: skip already-produced rows for THIS rank only
     if os.path.exists(path) and config.skip_existing:
         df = pd.read_csv(path)
         length = len(df)
@@ -132,17 +127,9 @@ def main(config):
 
     batch_dataset = dataset.batch(batch_size=config.batch_size)
 
-    #if os.path.exists(state_dict_path):
-    #    with open(state_dict_path, "r") as f:
-    #        batch_dataset.load_state_dict(json.load(f))
-    #    logging.info(f"[rank {rank}] Loaded state dict from {state_dict_path}")
-    #else:
-    #    logging.info(f"[rank {rank}] No state dict found!")
-
     for batch in batch_dataset:
         start = time.time()
 
-        # Build prompts from your messages
         prompts = [messages_to_prompt(tokenizer, m) for m in batch["messages"]]
 
         inputs = tokenizer(
@@ -152,8 +139,6 @@ def main(config):
             truncation=True,
         ).to(device)
 
-        # lengths per sample (so we can slice generated tokens cleanly)
-        #lengths = inputs["attention_mask"].sum(dim=1).tolist()
         prompt_len = inputs["input_ids"].shape[1]
 
         with torch.inference_mode():
@@ -168,9 +153,6 @@ def main(config):
                 use_cache=True,
             )
 
-        # Extract only the generated continuation (not the prompt)
-        #gen_texts = []
-        #for i in range(out_ids.shape[0]):
         gen_ids = out_ids[:, prompt_len:]
         print("gen_ids",gen_ids.shape)
         gen_texts = tokenizer.batch_decode(gen_ids, skip_special_tokens=True)
@@ -194,12 +176,25 @@ def main(config):
         logging.info(f"[rank {rank}] Batch processed in {time.time() - start:.2f}s")
         empty_cache()
 
+    if rank == 0:
+        all_dfs = []
+        for r in range(world):
+            df_path = os.path.join(config.output_dir, f"statements_{r}.csv")
+            if os.path.exists(df_path):
+                all_dfs.append(pd.read_csv(df_path))
+        if all_dfs:
+            combined_df = pd.concat(all_dfs, ignore_index=True)
+            combined_df.to_csv(os.path.join(config.output_dir, "dataset_0.csv"), index=False)
+            logging.info(f"Combined CSV saved with {len(combined_df)} rows.")
+        else:
+            logging.warning("No individual CSV files found to combine.")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, default="models/Qwen3-14B")
-    parser.add_argument("--prompt_text_file", type=str, default="prompts/prompt5.txt")
-    parser.add_argument("--dataset_path", type=str, default="data/RecommendationDatasets/reviews.json")
+    parser.add_argument("--model", type=str, default="Qwen/Qwen3-14B")
+    parser.add_argument("--prompt_text_file", type=str, default="extraction/prompts/candidate_extraction.txt")
+    parser.add_argument("--dataset_path", type=str, default="data/RecommendationDatasets/StatementDatasets/Toys14/reviews.jsonl")
     parser.add_argument("--json_format", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--format", type=str, default="amz14", choices=["amz14"])
     parser.add_argument("--output_dir", type=str, default="data/output")

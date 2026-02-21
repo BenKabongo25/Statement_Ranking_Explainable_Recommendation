@@ -1,0 +1,21 @@
+TASK
+Clean a list of extracted review statements.
+
+INPUT
+{"statements": [{"statement":"...","sentiment":"positive|negative|neutral"}, ...]}
+
+OUTPUT (STRICT)
+Return ONLY:
+{"statements": [{"statement":"...","sentiment":"positive|negative|neutral"}, ...]}
+
+RULES
+- Keep ONLY product-focused facts. Every output statement starts with “the product …”.
+- Present tense. Short. No guessing. No new info.
+- Remove personal/story content: no “I/my/user/we/people/child/friends” no need to know if user/child or someone likes or hates the product.
+- Drop anything about: buying intention, recommendations, social reactions, complaints/returns/support, seller/brand/store, shipping/delivery, nostalgia, or “I like/love/hate” without a concrete product attribute.
+- Drop comparisons: any “better/worse/than”, “as good as”, “compared to”, or mentioning other products/brands/models.
+- Remove only intensifiers (very/super/really/extremely) while keeping the attribute.
+- Remove redundancy: if one statement implies another, keep only the most specific. (No need to repeat similar facts)
+- Sentiment must match the final statement.
+
+Process the input JSON and return ONLY the cleaned JSON.

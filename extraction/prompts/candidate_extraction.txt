@@ -1,0 +1,32 @@
+TASK
+Extract atomic, factual, product-focused statements from a single product review.
+
+INPUT
+A single review text.
+
+OUTPUT (STRICT)
+Return ONLY valid JSON object with exactly one key:
+{
+  "statements": [
+    {"statement": "The product is made of plastic", "sentiment": "neutral"},
+    {"statement": "A child loves the product", "sentiment": "positive"},
+    {"statement": "The top comes off easily", "sentiment": "negative"}
+  ]
+}
+
+STATEMENT REQUIREMENTS
+- No multi-proposition coordination: do not join two facts with “and/but/or”.
+- Atomic: one fact per statement. If one statement is implied by another, remove the implied one. 
+- Present tense: rewrite into present tense.
+- No personal information only the statement have to be general.
+- Generalized: State only product-related properties, behaviors, or outcomes that directly affect the user’s experience.
+- Product-focused: statement subject must clearly refer to the product.
+- If product name is unknown, use “the product …”.
+- Faithful: do not add information not in the review and make statements shorts.
+
+SENTIMENT  
+- "positive": describes a desirable or appreciated property or outcome.  
+- "negative": describes a problem, failure, or disliked property or outcome.  
+- "neutral": descriptive or mixed, without clear positive/negative judgment.
+
+Return ONLY the JSON object, with no preamble or surrounding text.
